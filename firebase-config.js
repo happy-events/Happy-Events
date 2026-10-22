@@ -13,4 +13,6 @@ export const firebaseConfig = {
 // Use an UNSIGNED preset with allowed formats and an 8 MB max file size.
 export const cloudinaryCloudName = "us61zrjw";
 export const cloudinaryUploadPreset = "happy_events_upload";
+// Happy Events logo already uploaded to Cloudinary.
+export const cloudinaryLogoUrl = "https://res.cloudinary.com/us61zrjw/image/upload/v1792646181/logo.jpg";
 export const firebaseReady = !Object.values(firebaseConfig).some(v => String(v).startsWith("YOUR_"));

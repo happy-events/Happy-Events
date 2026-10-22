@@ -1,41 +1,41 @@
-# Happy Events — free starter website
+# Happy Events — Firebase + Cloudinary starter
 
-Responsive Happy Events starter for Parth Balar. Golden yellow/black branding, motion effects, Surat-only service area, WhatsApp inquiry links, Firebase-powered gallery and a basic admin login/gallery manager.
+Gujarati/English responsive public website and admin panel for Happy Events, Surat. Includes Firebase Email/Password admin login, Firestore managers for gallery/categories/services/site settings/orders, Cloudinary unsigned image upload, and public gallery with branded download support.
 
-## What is included
-- `index.html`, `styles.css`: responsive animated public website.
-- `app.js`: scroll reveals, WhatsApp messages and Firestore gallery loading with canvas watermark download.
-- `admin.html`, `admin.js`: Firebase email/password login and basic gallery metadata CRUD.
-- `firebase-config.js`: template. Fill it with your Firebase Web App config. This file is ignored by Git.
-- `firestore.rules`, `storage.rules`: starter security rules.
+## 1. Firebase setup
+1. Open Firebase Console and create/select the Happy Events project on the Spark plan.
+2. Register a Web App in Project settings and copy its config into `firebase-config.js`.
+3. Authentication → Sign-in method → enable **Email/Password**. Do not enable public signup.
+4. Authentication → Users → Add user. Create your admin email and a strong unique password. Copy the user's UID.
+5. Firestore Database → create database. Start in production mode.
+6. Firestore → Rules: paste `firestore.rules` and Publish.
+7. Firestore → Data → Start collection `admins`; document ID must be exactly the admin user's UID; add `role` (string) = `admin` and `active` (boolean) = `true`. Never let public users create admin records.
+8. Create `siteSettings` collection and document ID `main`. Fields: `siteName` string `Happy Events`, `logoUrl` string (Cloudinary logo URL), `whatsappNumber` string `918141463007`, `address` string `63, Oculus Residency, Valak, Surat, Gujarat - 395013, India`, `serviceArea` string `Surat`.
+9. For orders, the provided rules allow limited public order creation, while reading/updating orders is admin-only.
 
-## Free hosting route
-1. Install Git and create a free GitHub account.
-2. Create a new **private** repository first while configuring; upload these files. Do not commit passwords or service-account JSON files.
-3. GitHub Pages can host the static public site for free. In repository Settings → Pages, select the branch and root folder. Note: GitHub Pages serves static files only; Firebase supplies auth/database/storage.
-4. Create a Firebase project at https://console.firebase.google.com (Spark/free plan where available), register a Web App, and copy its config into `firebase-config.js`.
-5. In Firebase Authentication → Sign-in method, enable Email/Password. Do not enable public user registration in this site.
-6. In Authentication → Users, manually create your admin email and a strong unique password.
-7. Copy that user's UID. In Firestore, create collection `admins` and a document whose ID is exactly the UID. The document can contain `{ "role": "admin" }`. Never let a public user create their own admin record.
-8. Create Firestore database and Storage bucket. Paste rules from `firestore.rules` and `storage.rules` into the respective Rules tabs and publish.
-9. Upload your logo image as `logo.png` in the website root (or change the path in `app.js`). Also upload it to Firebase Storage under `brand/` for future admin enhancements.
-10. To add a gallery image, upload it to Storage under `gallery/`, copy its download URL, sign in at `/admin.html`, and add the title/URL/alt text/order. For branded downloads, images must be served with compatible CORS headers. If canvas export fails, host images in Firebase Storage and configure CORS for your site origin.
-11. Test admin access and rules using a second non-admin account before publishing.
+## 2. Cloudinary setup
+1. In Cloudinary Dashboard note your Cloud name.
+2. Settings → Upload → Upload presets → Add upload preset.
+3. Set Signing Mode to **Unsigned**, preset name (e.g. `happy_events_upload`), folder `happy-events`, allowed formats `jpg,jpeg,png,webp`, and a reasonable max file size (e.g. 8 MB) if the setting is available. Save.
+4. Add cloud name and preset name to `firebase-config.js` as `cloudinaryCloudName` and `cloudinaryUploadPreset`.
+5. Unsigned presets are public. Restrict file formats and size; do not put API secret in browser code. Monitor usage.
 
-## Firebase collections
-- `admins/{uid}`: admin allowlist document; provision manually in Firebase Console.
-- `gallery/{id}`: `title`, `imageUrl`, `alt`, `sortOrder`, `active`, `createdAt`, `updatedAt`.
-- `categories/{id}`, `services/{id}`, `testimonials/{id}`: intended editable content collections.
-- `siteSettings/{docId}`: intended site content/settings.
+## 3. Run and publish
+- Watermarked downloads use the Cloudinary logo URL configured in `firebase-config.js` (and each gallery item can override it with `watermarkUrl`). If a download fails, check Cloudinary CORS settings.
+- Run locally from this directory with `python -m http.server 8000`, then open `http://localhost:8000`.
+- For static hosting, GitHub Pages can host the website. Settings → Pages → deploy from your main branch/root. Firebase and Cloudinary run separately.
+- Before production, test rules and check that public users cannot read orders or modify admin data.
 
-## Important limitations of this starter
-- The admin UI currently manages gallery metadata only. It is a foundation, not a finished full CMS for every section.
-- Uploading a file directly from admin is not implemented yet; this version expects the file to be uploaded in Firebase Storage first and its URL pasted in.
-- For a truly production-ready system, test all rules, image CORS settings, mobile browsers and accessibility before taking customer orders.
-- Demo service copy is generic; update it to match actual packages. Reviews are intentionally not fabricated.
-- Keep the Firebase client config limited to normal web-app values. Never place private service-account credentials in client files.
-- Service area: Surat only. WhatsApp: +91 8141463007.
-- Business address: 63, Oculus Residency, Valak, Surat, Gujarat - 395013, India.
+## 4. Collections
+- `admins/{uid}`: admin allowlist, provision manually.
+- `gallery/{id}`: `title`, `categoryId`, `imageUrl`, `watermarkUrl`, `alt`, `sortOrder`, `active`, timestamps.
+- `categories/{id}`: `name`, `slug`, `imageUrl`, `description`, `sortOrder`, `active`.
+- `services/{id}`: `name`, `description`, `imageUrl`, `price`, `sortOrder`, `active`.
+- `siteSettings/main`: site name, logo, WhatsApp, address, service area, Instagram URL.
+- `orders/{id}`: customerName, phone, service, eventDate, message, status, createdAt.
 
-## Local preview
-Because JavaScript modules import Firebase from a CDN, run a local web server rather than opening `index.html` as a file. For example, with Python installed: `python -m http.server 8000`, then visit `http://localhost:8000`.
+## Notes
+- This is a starter implementation, not a security audit. Verify your Firestore rules before public launch.
+- Cloudinary unsigned uploads can be abused if the preset is too permissive. Do not use API secrets in client code.
+- Watermark download requires `logo.png` in the site root and CORS-compatible image URLs.
+- Service area is Surat only. WhatsApp: +91 81414 63007.
