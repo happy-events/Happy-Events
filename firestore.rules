@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // Provision admin documents from Firebase Console / trusted Admin SDK.
+    }
+    match /gallery/{itemId} {
+      allow read: if resource.data.active == true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /categories/{itemId} {
+      allow read: if resource.data.active == true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /services/{itemId} {
+      allow read: if resource.data.active == true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /siteSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /testimonials/{itemId} {
+      allow read: if resource.data.active == true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
