@@ -1,11 +1,16 @@
-// Copy this file to firebase-config.js and fill in values from Firebase Console.
-// Keep public web config here only; NEVER put service-account private keys in browser code.
+// Firebase Console > Project settings > Your apps > SDK setup.
+// These are public web-app config values, not private credentials.
 export const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBjGuBDmq6jdsfsPQXkpLI39WxzfcyDJeY",
+  authDomain: "happy-events-2004.firebaseapp.com",
+  projectId: "happy-events-2004",
+  storageBucket: "happy-events-2004.firebasestorage.app",
+  messagingSenderId: "606680470191",
+  appId: "1:606680470191:web:22c5e7a290a1e222433a5a",
+  measurementId: "G-BMCCHQ29HC"
 };
+// Cloudinary Dashboard: cloud name + Settings > Upload > Upload presets.
+// Use an UNSIGNED preset with allowed formats and an 8 MB max file size.
+export const cloudinaryCloudName = "us61zrjw";
+export const cloudinaryUploadPreset = "happy_events_upload";
 export const firebaseReady = !Object.values(firebaseConfig).some(v => String(v).startsWith("YOUR_"));
