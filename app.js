@@ -11,7 +11,7 @@ import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.g
 const PHONE_NUMBER = '918141463007';
 
 /* ==========================================================================
-   19 SERVICES COMPREHENSIVE DATA SPECIFICATION
+   19 SERVICES COMPREHENSIVE DATA SPECIFICATION (WITH GENERATED IMAGES)
    ========================================================================== */
 const SERVICES_DATA = [
   {
@@ -19,7 +19,7 @@ const SERVICES_DATA = [
     name: "Flower Decoration",
     nameGu: "ફ્લાવર ડેકોરેશન",
     category: "parties wedding",
-    image: "./Flower%20Decoration.png",
+    image: "./images/flower-decoration.jpg",
     desc: "Exquisite fresh flowers (Roses, Orchids, Lilies, Carnations) and luxury artificial floral setups for entrance arches, stage backdrops, dining centerpieces, and mandap elegance in Surat.",
     inclusions: [
       "Custom Entrance Floral Arch & Welcome Signage",
@@ -33,7 +33,7 @@ const SERVICES_DATA = [
     name: "Balloon Decoration",
     nameGu: "બલૂન ડેકોરેશન",
     category: "parties",
-    image: "./Balloon%20Decoration.png",
+    image: "./images/balloon-decoration.png",
     desc: "Modern organic balloon garlands, circular arch frames, pastel & chrome metallic finishes, custom balloon columns, and LED marquee lights for high-impact celebrations.",
     inclusions: [
       "Organic High-Grade Latex & Chrome Balloon Arch",
@@ -47,7 +47,7 @@ const SERVICES_DATA = [
     name: "Surprise Party",
     nameGu: "સરપ્રાઈઝ પાર્ટી ડેકોરેશન",
     category: "parties",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/surprise-party.jpg",
     desc: "Secret room makeovers for home, hotel, or cafe with glowing neon signs, rose petal pathways, romantic candles, balloons, and personalized photo strings.",
     inclusions: [
       "Secret venue setup before the guest of honour arrives",
@@ -61,7 +61,7 @@ const SERVICES_DATA = [
     name: "Selfie Point",
     nameGu: "સેલ્ફી પોઇન્ટ & ફોટો બૂથ",
     category: "family parties",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/selfie-point.jpg",
     desc: "Instagram-ready aesthetic photo corner with angel neon wings, floral frames, personalized neon names, vanity ring lights, and fun celebration props for all guests.",
     inclusions: [
       "Thematic Instagrammable Backdrop & Neon Angel Wings",
@@ -75,7 +75,7 @@ const SERVICES_DATA = [
     name: "Engagement Decoration",
     nameGu: "સગાઈ ડેકોરેશન (રીંગ સેરેમની)",
     category: "wedding",
-    image: "./Flower%20Decoration.png",
+    image: "./images/engagement-decoration.jpg",
     desc: "Majestic engagement stage styling with luxury couple sofa, grand floral backdrop, crystal chandeliers, warm fairy lighting, and decorative ring tray setups.",
     inclusions: [
       "Royal Floral Ring Ceremony Stage Backdrop",
@@ -89,7 +89,7 @@ const SERVICES_DATA = [
     name: "Vana Rasam Decoration",
     nameGu: "વાણા રસમ ડેકોરેશન",
     category: "wedding",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/vana-rasam.jpg",
     desc: "Authentic Gujarati traditional Vana ritual setting with decorative Bajot, wooden Patla, traditional marigold drapes, brass urlis, auspicious torans, and puja corners.",
     inclusions: [
       "Decorated Bajot and wooden Patla for bride/groom",
@@ -103,7 +103,7 @@ const SERVICES_DATA = [
     name: "Couple Entry",
     nameGu: "કપલ એન્ટ્રી કોન્સેપ્ટ",
     category: "entries",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/couple-entry.jpg",
     desc: "Step into your reception like heaven on earth. Low-lying dry-ice fog clouds, rose petal cannons, cold-pyro fountains, and customized romantic background music sync.",
     inclusions: [
       "Heavy Dry-Ice Low Fog Clouds (Walking on Clouds)",
@@ -117,7 +117,7 @@ const SERVICES_DATA = [
     name: "Anniversary Decoration",
     nameGu: "એનિવર્સરી ડેકોરેશન",
     category: "parties",
-    image: "./Balloon%20Decoration.png",
+    image: "./images/anniversary-decoration.jpg",
     desc: "Romantic 1st, 10th, 25th Silver or 50th Golden Jubilee setups with glowing heart arches, memory timeline photo walls, candlelight dining styling, and ambient music.",
     inclusions: [
       "Glowing Heart / Anniversary Arch Backdrop",
@@ -131,7 +131,7 @@ const SERVICES_DATA = [
     name: "Haldi Setup",
     nameGu: "હળદી સેરેમની સેટઅપ",
     category: "wedding",
-    image: "./Flower%20Decoration.png",
+    image: "./images/haldi-setup.jpg",
     desc: "Sunny yellow marigolds, giant brass urli filled with fresh rose petals, kaleeras, customized yellow drapes, quirky sunglass props, and cheerful photo backdrops.",
     inclusions: [
       "Large Decorative Brass Urli for Bride / Groom sitting",
@@ -145,7 +145,7 @@ const SERVICES_DATA = [
     name: "Mehndi Setup",
     nameGu: "મહેંદી ફંક્શન સેટઅપ",
     category: "wedding",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/mehndi-setup.jpg",
     desc: "Enchanting decorated jhula (swing) with marigold & bougainvillea vines, colorful Rajasthani umbrellas, cozy floor cushions, vibrant drapes, and dreamcatcher styling.",
     inclusions: [
       "Beautifully Decorated Bridal Swing (Jhula)",
@@ -159,7 +159,7 @@ const SERVICES_DATA = [
     name: "Bride-Groom Entry",
     nameGu: "દુલ્હા-દુલ્હન ગ્રાન્ડ એન્ટ્રી",
     category: "entries",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/bride-groom-entry.jpg",
     desc: "Royal bridal entry under illuminated flower chadar (phoolon ki chadar), royal palkhi (palanquin), groom royal chariot, smoke blasts, and majestic dhol-tasha pathway.",
     inclusions: [
       "Illuminated Phoolon Ki Chadar (Floral Canopy) with Fairy Lights",
@@ -173,7 +173,7 @@ const SERVICES_DATA = [
     name: "Kalpa Entry",
     nameGu: "કલ્પા એન્ટ્રી (કળશ/મંગળ પ્રવેશ)",
     category: "entries",
-    image: "./Flower%20Decoration.png",
+    image: "./images/kalpa-entry.jpg",
     desc: "Sacred Kalash and Kalpa ritual entry procession with beautifully decorated brass kalash, traditional lamps/diyas, rose petal shower, and auspicious Vedic floral carpet.",
     inclusions: [
       "Artistically Decorated Ceremonial Brass Kalash / Kalpa",
@@ -187,7 +187,7 @@ const SERVICES_DATA = [
     name: "Varmala Decoration",
     nameGu: "વરમાળા સ્ટેજ & થીમ",
     category: "wedding",
-    image: "./Flower%20Decoration.png",
+    image: "./images/varmala-decoration.jpg",
     desc: "Unforgettable garland exchange setups featuring revolving stages, hydraulic blooming lotus, cascading flower drops, CO2 jet blasts, and cinematic romantic lighting.",
     inclusions: [
       "Grand Revolving Stage / Hydraulic Lotus mechanism",
@@ -201,7 +201,7 @@ const SERVICES_DATA = [
     name: "Cold-pyro Entry",
     nameGu: "કોલ્ડ પાયરો એન્ટ્રી (સ્પાર્કલર્સ)",
     category: "entries",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/cold-pyro-entry.jpg",
     desc: "100% smokeless, non-hazardous cold fire sparkler fountains that ignite safely indoors or outdoors. Includes handheld pyro guns and synchronized stage waterfall sparklers.",
     inclusions: [
       "100% Safe, Non-Burn Cold Pyrotechnic Sparkler Fountains",
@@ -215,7 +215,7 @@ const SERVICES_DATA = [
     name: "Bed Decoration",
     nameGu: "બેડ ડેકોરેશન (સુહાગરાત / ફર્સ્ટ નાઇટ)",
     category: "family",
-    image: "./Flower%20Decoration.png",
+    image: "./images/bed-decoration.jpg",
     desc: "Exquisite honeymoon suite and wedding night bedroom styling with natural red roses, towel swans, aromatic candles, warm fairy light canopies, and petal pathways.",
     inclusions: [
       "Heart & Swan Motifs crafted with fresh red rose petals",
@@ -229,7 +229,7 @@ const SERVICES_DATA = [
     name: "Semant Decoration",
     nameGu: "સીમંત ડેકોરેશન (ખોળો ભરવો / શ્રીમંત)",
     category: "family",
-    image: "./Balloon%20Decoration.png",
+    image: "./images/semant-decoration.jpg",
     desc: "Honoring motherhood with traditional Gujarati Shrimant decor. Features floral swing (jhula), pastel backdrops, customized Mom-to-Be photo frame, and blessing accessories.",
     inclusions: [
       "Delicately Styled Swing (Jhula) for Mother-to-Be",
@@ -243,7 +243,7 @@ const SERVICES_DATA = [
     name: "Birthday Decoration",
     nameGu: "બર્થડે ડેકોરેશન (૧લી થી ૫૦મી બર્થડે)",
     category: "parties",
-    image: "./Balloon%20Decoration.png",
+    image: "./images/birthday-decoration.png",
     desc: "From 1st birthday theme wonderlands (Jungle, Boss Baby, Cocomelon, Unicorn, Space) to elegant milestone adult birthdays (18th, 25th, 50th) with LED numbers.",
     inclusions: [
       "Complete Theme Backdrop (Jungle, Boss Baby, Princess, etc.)",
@@ -257,7 +257,7 @@ const SERVICES_DATA = [
     name: "Chhathi Decoration",
     nameGu: "છઠ્ઠી પૂજન ડેકોરેશન (૬ઠ્ઠા દિવસની વિધિ)",
     category: "family",
-    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    image: "./images/chhathi-decoration.jpg",
     desc: "Sacred 6th day baby ceremony styling with beautifully decorated baby cradle (parnu / ghodiya), Vidhata pen-paper ritual table, fresh floral garlands, and traditional lamps.",
     inclusions: [
       "Special Decoration of the Newborn Cradle (Parnu / Ghodiya)",
@@ -271,7 +271,7 @@ const SERVICES_DATA = [
     name: "Ladwa Decoration",
     nameGu: "લાડવા ડેકોરેશન (લગ્ન રસમ)",
     category: "wedding",
-    image: "./Flower%20Decoration.png",
+    image: "./images/ladwa-decoration.jpg",
     desc: "Heartfelt Gujarati wedding ritual decoration for the Ladwa tradition. Features artistically garnished silver/brass sweet thalis, floral presentation baskets, and ethnic decor.",
     inclusions: [
       "Artistically Garnished Brass / Silver Ladwa Thalis",
