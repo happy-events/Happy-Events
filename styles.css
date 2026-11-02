@@ -68,7 +68,7 @@ body {
   position: relative;
 }
 
-/* Canvas Background for Particle/Confetti Animations */
+/* Canvas for Floating Celebration Balloons & Flower Petals */
 #particlesCanvas {
   position: fixed;
   top: 0;
@@ -76,8 +76,9 @@ body {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 1;
-  opacity: 0.65;
+  z-index: 99; /* Floats over all page sections seamlessly */
+  opacity: 0.92;
+  will-change: transform;
 }
 
 /* Typography Helpers */
@@ -579,6 +580,61 @@ button {
 .hero-floating-card small {
   font-size: 10px;
   color: var(--text-muted);
+}
+
+/* Ambient Floating Balloon & Flower Decorative Badges */
+.floating-decor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+  user-select: none;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+}
+
+.floating-balloon-decor {
+  animation: float-balloon 5s ease-in-out infinite;
+  font-size: 40px;
+}
+
+.floating-flower-decor {
+  animation: float-flower 6s ease-in-out infinite;
+  font-size: 36px;
+}
+
+.floating-decor-1 {
+  top: 6%;
+  right: 12%;
+  animation-delay: -1s;
+}
+
+.floating-decor-2 {
+  bottom: 12%;
+  left: 6%;
+  animation-delay: -3s;
+}
+
+.floating-decor-3 {
+  top: 18%;
+  left: 4%;
+  animation-delay: -2s;
+}
+
+@keyframes float-balloon {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-24px) rotate(8deg);
+  }
+}
+
+@keyframes float-flower {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-18px) rotate(22deg) scale(1.1);
+  }
 }
 
 /* ==========================================================================

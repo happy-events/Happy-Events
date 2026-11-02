@@ -283,7 +283,9 @@ const SERVICES_DATA = [
 ];
 
 /* ==========================================================================
-   PARTICLES / CONFETTI CANVAS ANIMATION (OPTIMIZED 60FPS)
+   FLYING BALLOONS & FLOATING FLOWERS CELEBRATION ENGINE (60 FPS)
+   Interactive Canvas with Realistic 3D Tumbling Petals, Floating Glossy Balloons,
+   Blossoms, Strings, and Wind Turbulence
    ========================================================================== */
 function initParticlesCanvas() {
   const canvas = document.getElementById('particlesCanvas');
@@ -302,89 +304,371 @@ function initParticlesCanvas() {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReduced) return;
 
-  const PARTICLE_COUNT = Math.min(45, Math.floor(width / 28));
+  const isMobile = width < 768;
+  const TOTAL_COUNT = isMobile ? 32 : 55;
   const particles = [];
-  const colors = ['#ffd20a', '#f5ab00', '#ffffff', '#ffe58f', '#ff9f1c'];
 
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      radius: Math.random() * 2.8 + 1,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: -(Math.random() * 0.55 + 0.25),
-      alpha: Math.random() * 0.6 + 0.2,
-      pulseSpeed: Math.random() * 0.02 + 0.008,
-      shape: Math.random() > 0.55 ? 'circle' : 'star'
-    });
+  // Color palettes for authentic luxury celebrations
+  const balloonColors = [
+    '#ffd20a', // Royal Gold
+    '#ff4d6d', // Festive Rose Red
+    '#ff758f', // Blush Pink
+    '#ffa200', // Saffron Amber
+    '#ffe47a', // Pastel Champagne
+    '#a0c4ff', // Pastel Sky Blue
+    '#c77dff'  // Lavender
+  ];
+
+  const petalColors = [
+    '#d90429', // Deep Velvet Red Rose
+    '#ef233c', // Crimson Rose
+    '#ff758f', // Romantic Pink Rose
+    '#ff9e00', // Marigold Saffron
+    '#ffd000', // Marigold Yellow
+    '#fff0f3'  // White Jasmine
+  ];
+
+  const blossomPetalColors = [
+    '#ffb3c6', // Soft Blossom Pink
+    '#ffe5ec', // Cherry White
+    '#ffd166', // Marigold Blossom
+    '#ffffff'  // Pure Jasmine
+  ];
+
+  function createParticle(type, startY) {
+    const y = startY !== undefined ? startY : Math.random() * height;
+    const x = Math.random() * width;
+
+    if (type === 'balloon') {
+      const r = isMobile ? (Math.random() * 8 + 12) : (Math.random() * 12 + 15);
+      return {
+        type: 'balloon',
+        x,
+        y,
+        radius: r,
+        color: balloonColors[Math.floor(Math.random() * balloonColors.length)],
+        vy: -(Math.random() * 0.7 + 0.45),
+        vx: (Math.random() - 0.5) * 0.35,
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: Math.random() * 0.02 + 0.015,
+        stringWave: Math.random() * Math.PI * 2,
+        alpha: Math.random() * 0.35 + 0.65
+      };
+    } else if (type === 'petal') {
+      const pWidth = isMobile ? (Math.random() * 4 + 7) : (Math.random() * 6 + 9);
+      const pHeight = pWidth * (Math.random() * 0.4 + 1.4);
+      return {
+        type: 'petal',
+        x,
+        y,
+        width: pWidth,
+        height: pHeight,
+        color: petalColors[Math.floor(Math.random() * petalColors.length)],
+        vy: Math.random() * 0.65 + 0.4, // Petals fall gently
+        vx: Math.random() * 0.5 - 0.15, // Gentle breeze towards right
+        rotation: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 0.035,
+        flipAngle: Math.random() * Math.PI * 2,
+        vFlip: Math.random() * 0.045 + 0.02,
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: Math.random() * 0.025 + 0.015,
+        alpha: Math.random() * 0.35 + 0.65
+      };
+    } else if (type === 'blossom') {
+      const size = isMobile ? (Math.random() * 6 + 10) : (Math.random() * 9 + 13);
+      return {
+        type: 'blossom',
+        x,
+        y,
+        size,
+        petalColor: blossomPetalColors[Math.floor(Math.random() * blossomPetalColors.length)],
+        centerColor: '#ffd20a',
+        vy: Math.random() * 0.5 + 0.35,
+        vx: Math.random() * 0.4 - 0.1,
+        rotation: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 0.025,
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: Math.random() * 0.02 + 0.01,
+        alpha: Math.random() * 0.3 + 0.7
+      };
+    } else {
+      // Sparkle / Confetti star
+      return {
+        type: 'sparkle',
+        x,
+        y,
+        radius: Math.random() * 2.5 + 1.2,
+        color: '#ffd20a',
+        vy: -(Math.random() * 0.4 + 0.15),
+        vx: (Math.random() - 0.5) * 0.3,
+        alpha: Math.random() * 0.6 + 0.3,
+        pulseSpeed: Math.random() * 0.03 + 0.01
+      };
+    }
   }
 
+  // Populate balanced mix of celebration floaters
+  for (let i = 0; i < TOTAL_COUNT; i++) {
+    const rand = Math.random();
+    let type;
+    if (rand < 0.28) {
+      type = 'balloon'; // 28% Floating balloons
+    } else if (rand < 0.65) {
+      type = 'petal';   // 37% Tumbling flower petals
+    } else if (rand < 0.85) {
+      type = 'blossom'; // 20% Spinning blossoms
+    } else {
+      type = 'sparkle'; // 15% Twinkling gold stars
+    }
+    particles.push(createParticle(type));
+  }
+
+  // Interactive Wind & Touch Turbulence
   let mouseX = -1000;
   let mouseY = -1000;
+  let mouseSpeedX = 0;
+  let lastMouseX = -1000;
+
   window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
+    mouseSpeedX = e.clientX - lastMouseX;
+    lastMouseX = mouseX = e.clientX;
     mouseY = e.clientY;
   });
 
-  function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
-    let rot = (Math.PI / 2) * 3;
-    let x = cx;
-    let y = cy;
-    let step = Math.PI / spikes;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - outerRadius);
-    for (let i = 0; i < spikes; i++) {
-      x = cx + Math.cos(rot) * outerRadius;
-      y = cy + Math.sin(rot) * outerRadius;
-      ctx.lineTo(x, y);
-      rot += step;
-      x = cx + Math.cos(rot) * innerRadius;
-      y = cy + Math.sin(rot) * innerRadius;
-      ctx.lineTo(x, y);
-      rot += step;
+  // Spawn celebratory burst on click / tap
+  window.addEventListener('click', (e) => {
+    // Only spawn if not clicking an interactive input or button
+    if (e.target.closest('button, a, input, select, textarea')) return;
+
+    for (let k = 0; k < 4; k++) {
+      const type = k === 0 ? 'balloon' : (k % 2 === 0 ? 'blossom' : 'petal');
+      const p = createParticle(type, e.clientY + (Math.random() * 20 - 10));
+      p.x = e.clientX + (Math.random() * 40 - 20);
+      p.vx = (Math.random() - 0.5) * 1.8;
+      p.vy = type === 'balloon' ? -(Math.random() * 1.5 + 1.0) : -(Math.random() * 1.2 + 0.3);
+      particles.push(p);
+      if (particles.length > TOTAL_COUNT + 15) particles.shift();
     }
-    ctx.lineTo(cx, cy - outerRadius);
-    ctx.closePath();
+  });
+
+  /* -------------------------------------------------------------
+     VECTOR DRAWING UTILITIES FOR BALLOONS & FLOWERS
+     ------------------------------------------------------------- */
+  function drawBalloon(p) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    const tilt = Math.sin(p.swayPhase) * 0.12;
+    ctx.rotate(tilt);
+
+    const r = p.radius;
+
+    // Balloon Body (Oval)
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r, r * 1.28, 0, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
     ctx.fill();
+
+    // 3D Metallic / Glossy Specular Highlight
+    const grad = ctx.createRadialGradient(-r * 0.35, -r * 0.45, 1, -r * 0.25, -r * 0.35, r * 0.85);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+    grad.addColorStop(0.35, 'rgba(255, 255, 255, 0.25)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.28, -r * 0.38, r * 0.42, r * 0.55, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Balloon Knot
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.18, r * 1.28);
+    ctx.lineTo(r * 0.18, r * 1.28);
+    ctx.lineTo(0, r * 1.42);
+    ctx.closePath();
+    ctx.fillStyle = p.color;
+    ctx.fill();
+
+    // Swaying Hanging String
+    ctx.beginPath();
+    ctx.moveTo(0, r * 1.42);
+    const strLen = r * 2.8;
+    ctx.bezierCurveTo(
+      Math.sin(p.stringWave) * 10, r * 1.42 + strLen * 0.33,
+      -Math.sin(p.stringWave) * 10, r * 1.42 + strLen * 0.66,
+      Math.sin(p.stringWave * 1.2) * 5, r * 1.42 + strLen
+    );
+    ctx.strokeStyle = 'rgba(160, 140, 100, 0.45)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.restore();
   }
 
+  function drawPetal(p) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation);
+    // 3D Tumbling Flip scale
+    ctx.scale(1, Math.cos(p.flipAngle));
+
+    const w = p.width;
+    const h = p.height;
+
+    // Organic Rose/Marigold Petal Path
+    ctx.beginPath();
+    ctx.moveTo(0, -h / 2);
+    ctx.bezierCurveTo(w * 1.1, -h * 0.25, w * 1.1, h * 0.35, 0, h / 2);
+    ctx.bezierCurveTo(-w * 1.1, h * 0.35, -w * 1.1, -h * 0.25, 0, -h / 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+
+    // Delicate inner vein line
+    ctx.beginPath();
+    ctx.moveTo(0, -h * 0.4);
+    ctx.lineTo(0, h * 0.3);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawBlossom(p) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation);
+
+    const petals = 5;
+    const s = p.size;
+
+    // 5 Rounded Petals
+    for (let i = 0; i < petals; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 / petals) * i);
+      ctx.beginPath();
+      ctx.ellipse(0, s * 0.5, s * 0.32, s * 0.5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = p.petalColor;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Golden Flower Center
+    ctx.beginPath();
+    ctx.arc(0, 0, s * 0.24, 0, Math.PI * 2);
+    ctx.fillStyle = p.centerColor;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawSparkle(p) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.beginPath();
+    const spikes = 4;
+    const outer = p.radius * 2.2;
+    const inner = p.radius * 0.6;
+    let rot = (Math.PI / 2) * 3;
+    let step = Math.PI / spikes;
+
+    ctx.moveTo(0, -outer);
+    for (let i = 0; i < spikes; i++) {
+      ctx.lineTo(Math.cos(rot) * outer, Math.sin(rot) * outer);
+      rot += step;
+      ctx.lineTo(Math.cos(rot) * inner, Math.sin(rot) * inner);
+      rot += step;
+    }
+    ctx.closePath();
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* -------------------------------------------------------------
+     MAIN ANIMATION LOOP (60 FPS)
+     ------------------------------------------------------------- */
   function render() {
     ctx.clearRect(0, 0, width, height);
 
     for (let p of particles) {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.alpha += Math.sin(Date.now() * p.pulseSpeed) * 0.005;
-
-      // Wrap around screen
-      if (p.y < -10) {
-        p.y = height + 10;
-        p.x = Math.random() * width;
+      // Wind sway dynamics
+      if (p.swayPhase !== undefined) {
+        p.swayPhase += p.swaySpeed;
       }
-      if (p.x < -10) p.x = width + 10;
-      if (p.x > width + 10) p.x = -10;
+      if (p.stringWave !== undefined) {
+        p.stringWave += 0.035;
+      }
 
-      // Mouse gentle repel
+      // Movement & Physics
+      if (p.type === 'balloon') {
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(p.swayPhase) * 0.65;
+
+        // Wrap to bottom when floating off top
+        if (p.y < -p.radius * 4) {
+          p.y = height + p.radius * 4;
+          p.x = Math.random() * width;
+        }
+      } else if (p.type === 'petal') {
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(p.swayPhase) * 0.85;
+        p.rotation += p.vRot;
+        p.flipAngle += p.vFlip;
+
+        // Wrap to top when fluttering off bottom
+        if (p.y > height + 25) {
+          p.y = -25;
+          p.x = Math.random() * width;
+        }
+      } else if (p.type === 'blossom') {
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(p.swayPhase) * 0.55;
+        p.rotation += p.vRot;
+
+        // Wrap to top when drifting off bottom
+        if (p.y > height + 30) {
+          p.y = -30;
+          p.x = Math.random() * width;
+        }
+      } else {
+        // Sparkle
+        p.y += p.vy;
+        p.x += p.vx;
+        p.alpha += Math.sin(Date.now() * p.pulseSpeed) * 0.008;
+
+        if (p.y < -10) {
+          p.y = height + 10;
+          p.x = Math.random() * width;
+        }
+      }
+
+      // Wrap horizontal bounds
+      if (p.x < -30) p.x = width + 30;
+      if (p.x > width + 30) p.x = -30;
+
+      // Mouse Wind Repel / Breeze Interaction
       const dx = p.x - mouseX;
       const dy = p.y - mouseY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 80) {
-        p.x += (dx / dist) * 1.5;
-        p.y += (dy / dist) * 1.5;
+      if (dist < 100) {
+        const force = (100 - dist) / 100;
+        p.x += (dx / dist) * force * 2.2;
+        p.y += (dy / dist) * force * 1.8;
       }
 
+      // Render with smooth alpha
       ctx.save();
-      ctx.globalAlpha = Math.max(0.1, Math.min(0.85, p.alpha));
-      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0.15, Math.min(0.9, p.alpha));
 
-      if (p.shape === 'star') {
-        drawStar(p.x, p.y, 4, p.radius * 2, p.radius);
+      if (p.type === 'balloon') {
+        drawBalloon(p);
+      } else if (p.type === 'petal') {
+        drawPetal(p);
+      } else if (p.type === 'blossom') {
+        drawBlossom(p);
       } else {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fill();
+        drawSparkle(p);
       }
+
       ctx.restore();
     }
 
