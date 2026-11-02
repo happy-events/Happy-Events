@@ -56,7 +56,7 @@ git init
 git add .
 git commit -m "Launch Happy Events 19 Services Website with Full Animations"
 git branch -M main
-git remote add origin https://github.com/<તમારું-યુઝરનેમ>/Happy-Events.git
+git remote add origin https://github.com/happy-events/Happy-Events.git
 git push -u origin main
 ```
 
@@ -71,7 +71,7 @@ git push -u origin main
    - **Branch**: `main` અને ફોલ્ડર `/ (root)` પસંદ કરીને **Save** પર ક્લિક કરો.
 5. ૧ થી ૨ મિનિટમાં તમારી સાઇટ લાઈવ થઈ જશે!
    - તમારી લાઈવ સાઈટની લિંક આવી હશે:  
-     `https://<તમારું-યુઝરનેમ>.github.io/Happy-Events/`
+     `https://happy-events.github.io/Happy-Events/`
 
 ---
 
