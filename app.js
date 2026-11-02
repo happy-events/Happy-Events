@@ -1,14 +1,793 @@
+/**
+ * Happy Events Surat — Master Web Application
+ * All 19 Services, Full Canvas Particle Animation,
+ * Interactive Budget Estimator, Modal System & WhatsApp Integration
+ */
+
 import { firebaseConfig, firebaseReady, cloudinaryLogoUrl } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
-const phone='918141463007';
-document.querySelector('#year').textContent=new Date().getFullYear();
-document.querySelectorAll('.wa-service').forEach(a=>{const s=a.dataset.service;a.href=`https://wa.me/${phone}?text=${encodeURIComponent(`Hello Happy Events, I am interested in ${s}. My event is in Surat. Please share details.`)}`;a.target='_blank';a.rel='noopener'});
-const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if('IntersectionObserver' in window && !reduced){const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll('.reveal').forEach(el=>io.observe(el));}else document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'));
-async function loadGallery(){if(!firebaseReady)return;try{const app=initializeApp(firebaseConfig);const db=getFirestore(app);const q=query(collection(db,'gallery'),where('active','==',true),orderBy('sortOrder','asc'));const snap=await getDocs(q);const items=snap.docs.map(d=>({id:d.id,...d.data()}));if(!items.length)return;const grid=document.querySelector('#galleryGrid');grid.innerHTML='';grid.style.display='grid';items.forEach(item=>{if(!item.imageUrl)return;const card=document.createElement('article');card.className='gallery-item reveal visible';const img=document.createElement('img');img.crossOrigin='anonymous';img.src=item.imageUrl;img.alt=item.alt||item.title||'Happy Events gallery photo';img.loading='lazy';const actions=document.createElement('div');actions.className='gallery-actions';const b=document.createElement('button');b.textContent='↓ Download with logo';b.addEventListener('click',()=>downloadWatermarked(img,item.title||'happy-events-photo',item.watermarkUrl||cloudinaryLogoUrl));actions.append(b);card.append(img,actions);grid.append(card)})}catch(e){console.warn('Gallery not loaded; check Firebase config and rules.',e)}}
-function downloadWatermarked(img,name,logoUrl){if(!img.complete||!img.naturalWidth){alert('Photo is still loading. Please try again.');return}const logo=new Image();logo.crossOrigin='anonymous';logo.src=logoUrl||cloudinaryLogoUrl;logo.onload=()=>render(logo);logo.onerror=()=>alert('Could not load the Happy Events logo. Check the Cloudinary logo URL and CORS settings.');function render(logoImg){try{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);const pad=Math.max(16,c.width*.025),w=Math.min(c.width*.28,c.width*.4),h=w*logoImg.naturalHeight/logoImg.naturalWidth;x.globalAlpha=.88;x.drawImage(logoImg,c.width-w-pad,c.height-h-pad,w,h);x.globalAlpha=1;x.fillStyle='rgba(0,0,0,.62)';x.font=`bold ${Math.max(12,c.width*.018)}px Arial`;x.textAlign='left';x.fillText('HAPPY EVENTS • SURAT',pad,c.height-pad);c.toBlob(blob=>{if(!blob){alert('Could not export this image. Check image hosting CORS settings.');return}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${name.replace(/[^a-z0-9-_]/gi,'-')}-happy-events.jpg`;a.click();URL.revokeObjectURL(a.href)},'image/jpeg',.94)}catch(e){alert('Watermarked download failed. Check image hosting CORS settings and try again.')}}}
-async function loadServices(){if(!firebaseReady)return;try{const app=initializeApp(firebaseConfig,'services-app');const db=getFirestore(app);const q=query(collection(db,'services'),where('active','==',true),orderBy('sortOrder','asc'));const snap=await getDocs(q);const services=snap.docs.map(d=>({id:d.id,...d.data()}));if(!services.length)return;const grid=document.querySelector('#servicesGrid');grid.innerHTML='';services.forEach((service,index)=>{const card=document.createElement('article');card.className='service-card reveal visible';const num=document.createElement('span');num.className='card-num';num.textContent=`${String(index+1).padStart(2,'0')} / HAPPY EVENTS`;const icon=document.createElement('div');icon.className='service-icon';icon.textContent=service.imageUrl?'✦':'✳';const title=document.createElement('h3');title.textContent=service.name||'Event service';const desc=document.createElement('p');desc.textContent=service.description||'Beautifully planned décor for your special occasion.';const link=document.createElement('a');link.className='text-link wa-service';link.textContent=service.price?`Starting from ₹${service.price} · Enquire ↗`:'Enquire on WhatsApp ↗';link.href=`https://wa.me/${phone}?text=${encodeURIComponent(`Hello Happy Events, I am interested in ${service.name||'this service'}. My event is in Surat. Please share details.`)}`;link.target='_blank';link.rel='noopener';card.append(num,icon,title,desc,link);grid.append(card)});const note=document.querySelector('.demo-note');if(note)note.hidden=true}catch(e){console.warn('Services not loaded; showing demo services.',e)}}
-loadServices();
-loadGallery();
-document.querySelector('#enquiryForm').addEventListener('submit',async e=>{e.preventDefault();const status=document.querySelector('#enquiryStatus');if(!firebaseReady){status.textContent='Please use WhatsApp for now.';return}try{const app=initializeApp(firebaseConfig,'enquiry-app');const db=getFirestore(app);status.textContent='Sending…';await addDoc(collection(db,'orders'),{customerName:document.querySelector('#enquiryName').value.trim(),phone:document.querySelector('#enquiryPhone').value.trim(),service:document.querySelector('#enquiryService').value,eventDate:document.querySelector('#enquiryDate').value,message:document.querySelector('#enquiryMessage').value.trim(),status:'new',createdAt:serverTimestamp()});e.target.reset();status.textContent='Thank you! Your enquiry has been sent.'}catch(err){status.textContent='Could not send right now. Please contact us on WhatsApp.'}});
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+const PHONE_NUMBER = '918141463007';
+
+/* ==========================================================================
+   19 SERVICES COMPREHENSIVE DATA SPECIFICATION
+   ========================================================================== */
+const SERVICES_DATA = [
+  {
+    id: 1,
+    name: "Flower Decoration",
+    nameGu: "ફ્લાવર ડેકોરેશન",
+    category: "parties wedding",
+    image: "./Flower%20Decoration.png",
+    desc: "Exquisite fresh flowers (Roses, Orchids, Lilies, Carnations) and luxury artificial floral setups for entrance arches, stage backdrops, dining centerpieces, and mandap elegance in Surat.",
+    inclusions: [
+      "Custom Entrance Floral Arch & Welcome Signage",
+      "Stage Floral Backdrop with Fresh / High-Grade Imported Flowers",
+      "Dining Table Floral Centerpieces & Pathway Standees",
+      "Fragrant natural florals tailored to your colour palette"
+    ]
+  },
+  {
+    id: 2,
+    name: "Balloon Decoration",
+    nameGu: "બલૂન ડેકોરેશન",
+    category: "parties",
+    image: "./Balloon%20Decoration.png",
+    desc: "Modern organic balloon garlands, circular arch frames, pastel & chrome metallic finishes, custom balloon columns, and LED marquee lights for high-impact celebrations.",
+    inclusions: [
+      "Organic High-Grade Latex & Chrome Balloon Arch",
+      "Metallic Ring / Circular Backdrop Frame",
+      "Custom Neon / Acrylic Name Signage",
+      "Color themes: Pastel, Rose Gold, Metallic, Jungle, Vintage"
+    ]
+  },
+  {
+    id: 3,
+    name: "Surprise Party",
+    nameGu: "સરપ્રાઈઝ પાર્ટી ડેકોરેશન",
+    category: "parties",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "Secret room makeovers for home, hotel, or cafe with glowing neon signs, rose petal pathways, romantic candles, balloons, and personalized photo strings.",
+    inclusions: [
+      "Secret venue setup before the guest of honour arrives",
+      "Rose petal entrance pathway & aromatic candles",
+      "Glowing LED Neon Sign ('Happy Birthday', 'Marry Me', etc.)",
+      "Helium / Ceiling Balloons with hanging couple photos"
+    ]
+  },
+  {
+    id: 4,
+    name: "Selfie Point",
+    nameGu: "સેલ્ફી પોઇન્ટ & ફોટો બૂથ",
+    category: "family parties",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "Instagram-ready aesthetic photo corner with angel neon wings, floral frames, personalized neon names, vanity ring lights, and fun celebration props for all guests.",
+    inclusions: [
+      "Thematic Instagrammable Backdrop & Neon Angel Wings",
+      "Custom Couple / Birthday Star Name Board",
+      "Vanity Ring Light & Ambient Spotlights",
+      "Quirky handheld celebration photo props"
+    ]
+  },
+  {
+    id: 5,
+    name: "Engagement Decoration",
+    nameGu: "સગાઈ ડેકોરેશન (રીંગ સેરેમની)",
+    category: "wedding",
+    image: "./Flower%20Decoration.png",
+    desc: "Majestic engagement stage styling with luxury couple sofa, grand floral backdrop, crystal chandeliers, warm fairy lighting, and decorative ring tray setups.",
+    inclusions: [
+      "Royal Floral Ring Ceremony Stage Backdrop",
+      "Designer Couple Sofa / Royal Seating",
+      "Chandelier & Warm Ambient Fairy Light Rigging",
+      "Artistic Ring Platter & Exchange Corner"
+    ]
+  },
+  {
+    id: 6,
+    name: "Vana Rasam Decoration",
+    nameGu: "વાણા રસમ ડેકોરેશન",
+    category: "wedding",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "Authentic Gujarati traditional Vana ritual setting with decorative Bajot, wooden Patla, traditional marigold drapes, brass urlis, auspicious torans, and puja corners.",
+    inclusions: [
+      "Decorated Bajot and wooden Patla for bride/groom",
+      "Auspicious Marigold & Bandhani Drape Backdrop",
+      "Traditional Brass Urlis with Rose Petals & Diyas",
+      "Complete ritual puja seating setup"
+    ]
+  },
+  {
+    id: 7,
+    name: "Couple Entry",
+    nameGu: "કપલ એન્ટ્રી કોન્સેપ્ટ",
+    category: "entries",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "Step into your reception like heaven on earth. Low-lying dry-ice fog clouds, rose petal cannons, cold-pyro fountains, and customized romantic background music sync.",
+    inclusions: [
+      "Heavy Dry-Ice Low Fog Clouds (Walking on Clouds)",
+      "Flower Petal Gun Blasters & Confetti Showers",
+      "Synchronized Cold Pyro Sparkler Fountains",
+      "Romantic LED Pathway Pillars"
+    ]
+  },
+  {
+    id: 8,
+    name: "Anniversary Decoration",
+    nameGu: "એનિવર્સરી ડેકોરેશન",
+    category: "parties",
+    image: "./Balloon%20Decoration.png",
+    desc: "Romantic 1st, 10th, 25th Silver or 50th Golden Jubilee setups with glowing heart arches, memory timeline photo walls, candlelight dining styling, and ambient music.",
+    inclusions: [
+      "Glowing Heart / Anniversary Arch Backdrop",
+      "Memory Timeline Photo Wall from marriage to today",
+      "Candlelight Dining Table / Cake Table Styling",
+      "Golden / Silver Jubilee themed balloons & lights"
+    ]
+  },
+  {
+    id: 9,
+    name: "Haldi Setup",
+    nameGu: "હળદી સેરેમની સેટઅપ",
+    category: "wedding",
+    image: "./Flower%20Decoration.png",
+    desc: "Sunny yellow marigolds, giant brass urli filled with fresh rose petals, kaleeras, customized yellow drapes, quirky sunglass props, and cheerful photo backdrops.",
+    inclusions: [
+      "Large Decorative Brass Urli for Bride / Groom sitting",
+      "Dense Yellow & Orange Marigold Floral Backdrop",
+      "Quirky Haldi Photo Props (Chashma, Fun Quotes)",
+      "Traditional Matkas, Kaleeras & Drapes"
+    ]
+  },
+  {
+    id: 10,
+    name: "Mehndi Setup",
+    nameGu: "મહેંદી ફંક્શન સેટઅપ",
+    category: "wedding",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "Enchanting decorated jhula (swing) with marigold & bougainvillea vines, colorful Rajasthani umbrellas, cozy floor cushions, vibrant drapes, and dreamcatcher styling.",
+    inclusions: [
+      "Beautifully Decorated Bridal Swing (Jhula)",
+      "Colorful Rajasthani Umbrellas & Boho Dreamcatchers",
+      "Festive Floor Seating with Ethnic Cushions",
+      "Photogenic Mehndi Corner for friends & family"
+    ]
+  },
+  {
+    id: 11,
+    name: "Bride-Groom Entry",
+    nameGu: "દુલ્હા-દુલ્હન ગ્રાન્ડ એન્ટ્રી",
+    category: "entries",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "Royal bridal entry under illuminated flower chadar (phoolon ki chadar), royal palkhi (palanquin), groom royal chariot, smoke blasts, and majestic dhol-tasha pathway.",
+    inclusions: [
+      "Illuminated Phoolon Ki Chadar (Floral Canopy) with Fairy Lights",
+      "Royal Palkhi (Palanquin) Entry Option",
+      "Handheld Colored Smoke Flares",
+      "Royal entry props & coordinated entry choreography guidance"
+    ]
+  },
+  {
+    id: 12,
+    name: "Kalpa Entry",
+    nameGu: "કલ્પા એન્ટ્રી (કળશ/મંગળ પ્રવેશ)",
+    category: "entries",
+    image: "./Flower%20Decoration.png",
+    desc: "Sacred Kalash and Kalpa ritual entry procession with beautifully decorated brass kalash, traditional lamps/diyas, rose petal shower, and auspicious Vedic floral carpet.",
+    inclusions: [
+      "Artistically Decorated Ceremonial Brass Kalash / Kalpa",
+      "Auspicious Fresh Flower Petal Pathway",
+      "Traditional Akhand Diya & Lighting Standees",
+      "Sacred Vedic entry setup for spiritual sanctity"
+    ]
+  },
+  {
+    id: 13,
+    name: "Varmala Decoration",
+    nameGu: "વરમાળા સ્ટેજ & થીમ",
+    category: "wedding",
+    image: "./Flower%20Decoration.png",
+    desc: "Unforgettable garland exchange setups featuring revolving stages, hydraulic blooming lotus, cascading flower drops, CO2 jet blasts, and cinematic romantic lighting.",
+    inclusions: [
+      "Grand Revolving Stage / Hydraulic Lotus mechanism",
+      "Automatic Petal Rain Drop from above",
+      "Dual CO2 Cold Jet Blasts on Varmala Moment",
+      "Cinematic Follow-Spotlight & Ambient Lighting"
+    ]
+  },
+  {
+    id: 14,
+    name: "Cold-pyro Entry",
+    nameGu: "કોલ્ડ પાયરો એન્ટ્રી (સ્પાર્કલર્સ)",
+    category: "entries",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "100% smokeless, non-hazardous cold fire sparkler fountains that ignite safely indoors or outdoors. Includes handheld pyro guns and synchronized stage waterfall sparklers.",
+    inclusions: [
+      "100% Safe, Non-Burn Cold Pyrotechnic Sparkler Fountains",
+      "Synchronized electronic firing console",
+      "Stage Waterfall Sparkler cascade option",
+      "Handheld Cold-Pyro Guns for friends & family"
+    ]
+  },
+  {
+    id: 15,
+    name: "Bed Decoration",
+    nameGu: "બેડ ડેકોરેશન (સુહાગરાત / ફર્સ્ટ નાઇટ)",
+    category: "family",
+    image: "./Flower%20Decoration.png",
+    desc: "Exquisite honeymoon suite and wedding night bedroom styling with natural red roses, towel swans, aromatic candles, warm fairy light canopies, and petal pathways.",
+    inclusions: [
+      "Heart & Swan Motifs crafted with fresh red rose petals",
+      "Aromatic Scented Candles & Tealights",
+      "Warm Fairy Light Bed Canopy Styling",
+      "Flower petal pathway leading from entrance to bed"
+    ]
+  },
+  {
+    id: 16,
+    name: "Semant Decoration",
+    nameGu: "સીમંત ડેકોરેશન (ખોળો ભરવો / શ્રીમંત)",
+    category: "family",
+    image: "./Balloon%20Decoration.png",
+    desc: "Honoring motherhood with traditional Gujarati Shrimant decor. Features floral swing (jhula), pastel backdrops, customized Mom-to-Be photo frame, and blessing accessories.",
+    inclusions: [
+      "Delicately Styled Swing (Jhula) for Mother-to-Be",
+      "Pastel Balloon & Floral Arch Backdrop",
+      "'Mom to Be' & 'Welcome Baby' Custom Neon / Cutouts",
+      "Auspicious coconut, thali & blessing corner setup"
+    ]
+  },
+  {
+    id: 17,
+    name: "Birthday Decoration",
+    nameGu: "બર્થડે ડેકોરેશન (૧લી થી ૫૦મી બર્થડે)",
+    category: "parties",
+    image: "./Balloon%20Decoration.png",
+    desc: "From 1st birthday theme wonderlands (Jungle, Boss Baby, Cocomelon, Unicorn, Space) to elegant milestone adult birthdays (18th, 25th, 50th) with LED numbers.",
+    inclusions: [
+      "Complete Theme Backdrop (Jungle, Boss Baby, Princess, etc.)",
+      "LED Marquee Number Lights (1, 18, 25, 50, etc.)",
+      "Tiered Cake Table Plinths & Cylinder Stands",
+      "Welcome Standee & Balloon Clusters"
+    ]
+  },
+  {
+    id: 18,
+    name: "Chhathi Decoration",
+    nameGu: "છઠ્ઠી પૂજન ડેકોરેશન (૬ઠ્ઠા દિવસની વિધિ)",
+    category: "family",
+    image: "./Colorful%20Event%20Decoration%20Services%20Catalog.png",
+    desc: "Sacred 6th day baby ceremony styling with beautifully decorated baby cradle (parnu / ghodiya), Vidhata pen-paper ritual table, fresh floral garlands, and traditional lamps.",
+    inclusions: [
+      "Special Decoration of the Newborn Cradle (Parnu / Ghodiya)",
+      "Traditional Vidhata Ritual Desk with Pen, Paper & Diya",
+      "Fresh Marigold & Jasmine Floral Garlands",
+      "Divine, pure & peaceful ambience for family blessings"
+    ]
+  },
+  {
+    id: 19,
+    name: "Ladwa Decoration",
+    nameGu: "લાડવા ડેકોરેશન (લગ્ન રસમ)",
+    category: "wedding",
+    image: "./Flower%20Decoration.png",
+    desc: "Heartfelt Gujarati wedding ritual decoration for the Ladwa tradition. Features artistically garnished silver/brass sweet thalis, floral presentation baskets, and ethnic decor.",
+    inclusions: [
+      "Artistically Garnished Brass / Silver Ladwa Thalis",
+      "Traditional Floral Presentation Baskets & Trays",
+      "Auspicious Ritual Seating & Bajot Styling",
+      "Ethnic embroidery cloths, bandhani fabrics & torans"
+    ]
+  }
+];
+
+/* ==========================================================================
+   PARTICLES / CONFETTI CANVAS ANIMATION (OPTIMIZED 60FPS)
+   ========================================================================== */
+function initParticlesCanvas() {
+  const canvas = document.getElementById('particlesCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReduced) return;
+
+  const PARTICLE_COUNT = Math.min(45, Math.floor(width / 28));
+  const particles = [];
+  const colors = ['#ffd20a', '#f5ab00', '#ffffff', '#ffe58f', '#ff9f1c'];
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      radius: Math.random() * 2.8 + 1,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: -(Math.random() * 0.55 + 0.25),
+      alpha: Math.random() * 0.6 + 0.2,
+      pulseSpeed: Math.random() * 0.02 + 0.008,
+      shape: Math.random() > 0.55 ? 'circle' : 'star'
+    });
+  }
+
+  let mouseX = -1000;
+  let mouseY = -1000;
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
+    let rot = (Math.PI / 2) * 3;
+    let x = cx;
+    let y = cy;
+    let step = Math.PI / spikes;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerRadius;
+      y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, width, height);
+
+    for (let p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha += Math.sin(Date.now() * p.pulseSpeed) * 0.005;
+
+      // Wrap around screen
+      if (p.y < -10) {
+        p.y = height + 10;
+        p.x = Math.random() * width;
+      }
+      if (p.x < -10) p.x = width + 10;
+      if (p.x > width + 10) p.x = -10;
+
+      // Mouse gentle repel
+      const dx = p.x - mouseX;
+      const dy = p.y - mouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 80) {
+        p.x += (dx / dist) * 1.5;
+        p.y += (dy / dist) * 1.5;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.1, Math.min(0.85, p.alpha));
+      ctx.fillStyle = p.color;
+
+      if (p.shape === 'star') {
+        drawStar(p.x, p.y, 4, p.radius * 2, p.radius);
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  render();
+}
+
+/* ==========================================================================
+   NAVIGATION, STICKY & MOBILE MENU
+   ========================================================================== */
+function initNavigation() {
+  const navbar = document.getElementById('navbar');
+  const menuToggle = document.getElementById('menuToggle');
+  const navMenu = document.getElementById('navMenu');
+  const backToTop = document.getElementById('backToTop');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      navbar?.classList.add('scrolled');
+      backToTop?.classList.add('visible');
+    } else {
+      navbar?.classList.remove('scrolled');
+      backToTop?.classList.remove('visible');
+    }
+  });
+
+  menuToggle?.addEventListener('click', () => {
+    navMenu?.classList.toggle('open');
+  });
+
+  navMenu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      navMenu.classList.remove('open');
+    });
+  });
+
+  backToTop?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Set current year
+  const yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+}
+
+/* ==========================================================================
+   SCROLL REVEAL OBSERVER & ANIMATED NUMBER COUNTERS
+   ========================================================================== */
+function initScrollObserver() {
+  const elements = document.querySelectorAll('.reveal-on-scroll');
+  const counters = document.querySelectorAll('.counter');
+  let countersAnimated = false;
+
+  function animateCounters() {
+    if (countersAnimated) return;
+    countersAnimated = true;
+    counters.forEach((counter) => {
+      const target = +counter.getAttribute('data-target');
+      let current = 0;
+      const step = Math.max(1, Math.floor(target / 40));
+      const interval = setInterval(() => {
+        current += step;
+        if (current >= target) {
+          counter.textContent = target;
+          clearInterval(interval);
+        } else {
+          counter.textContent = current;
+        }
+      }, 35);
+    });
+  }
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            if (entry.target.classList.contains('stat-box') || entry.target.closest('.stats-section')) {
+              animateCounters();
+            }
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+  } else {
+    elements.forEach((el) => el.classList.add('visible'));
+    animateCounters();
+  }
+}
+
+/* ==========================================================================
+   SERVICE SEARCH & CATEGORY FILTERING
+   ========================================================================== */
+function initServiceFilters() {
+  const searchInput = document.getElementById('serviceSearch');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.service-card');
+
+  function applyFilter() {
+    const activeBtn = document.querySelector('.filter-btn.active');
+    const filterValue = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    cards.forEach((card) => {
+      const category = card.getAttribute('data-category') || '';
+      const name = (card.getAttribute('data-name') || '').toLowerCase();
+
+      const matchesFilter = filterValue === 'all' || category.includes(filterValue);
+      const matchesSearch = !query || name.includes(query);
+
+      if (matchesFilter && matchesSearch) {
+        card.style.display = 'flex';
+        card.style.opacity = '1';
+      } else {
+        card.style.display = 'none';
+        card.style.opacity = '0';
+      }
+    });
+  }
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilter();
+    });
+  });
+
+  searchInput?.addEventListener('input', applyFilter);
+}
+
+/* ==========================================================================
+   SERVICE DETAILS MODAL POPUP
+   ========================================================================== */
+function initServiceModal() {
+  const modal = document.getElementById('serviceModal');
+  const closeBtn = document.getElementById('modalCloseBtn');
+  const doneBtn = document.getElementById('modalDoneBtn');
+  const modalHeroImg = document.getElementById('modalHeroImg');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalTitleGu = document.getElementById('modalTitleGu');
+  const modalDesc = document.getElementById('modalDesc');
+  const modalInclusions = document.getElementById('modalInclusions');
+  const modalWaBtn = document.getElementById('modalWaBtn');
+
+  function openModal(serviceIdx) {
+    const s = SERVICES_DATA[serviceIdx];
+    if (!s) return;
+
+    modalHeroImg.src = s.image;
+    modalTitle.textContent = s.name;
+    modalTitleGu.textContent = s.nameGu;
+    modalDesc.textContent = s.desc;
+
+    modalInclusions.innerHTML = '';
+    s.inclusions.forEach((item) => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      modalInclusions.appendChild(li);
+    });
+
+    const msg = encodeURIComponent(`Hello Happy Events, I am interested in ${s.name} (${s.nameGu}) in Surat. Please share package details and available dates.`);
+    modalWaBtn.href = `https://wa.me/${PHONE_NUMBER}?text=${msg}`;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.btn-service-details').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const idx = e.currentTarget.getAttribute('data-service-idx');
+      openModal(parseInt(idx, 10));
+    });
+  });
+
+  closeBtn?.addEventListener('click', closeModal);
+  doneBtn?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+}
+
+/* ==========================================================================
+   INTERACTIVE BUDGET ESTIMATOR & QUOTE CALCULATOR
+   ========================================================================== */
+function initCalculator() {
+  const eventChips = document.querySelectorAll('#calcEventType .calc-chip');
+  const venueChips = document.querySelectorAll('#calcVenueType .calc-chip');
+  const serviceCheckboxes = document.querySelectorAll('#calcServicesList input[type="checkbox"]');
+  const priceDisplay = document.getElementById('calcPriceDisplay');
+  const btnShare = document.getElementById('btnShareEstimate');
+
+  let currentMultiplier = 1.0;
+  let currentVenueCost = 0;
+  let currentEventName = "Birthday / Party";
+  let currentVenueName = "Home / Flat";
+
+  function calculate() {
+    let baseServicesTotal = 0;
+    const selectedServices = [];
+
+    serviceCheckboxes.forEach((cb) => {
+      if (cb.checked) {
+        baseServicesTotal += parseInt(cb.getAttribute('data-price') || '0', 10);
+        selectedServices.push(cb.value);
+      }
+    });
+
+    const total = Math.round(baseServicesTotal * currentMultiplier + currentVenueCost);
+    const formatted = '₹ ' + total.toLocaleString('en-IN');
+    if (priceDisplay) priceDisplay.textContent = formatted;
+
+    return { total, formatted, selectedServices };
+  }
+
+  eventChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      eventChips.forEach((c) => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentMultiplier = parseFloat(chip.getAttribute('data-multiplier') || '1.0');
+      currentEventName = chip.textContent.trim();
+      calculate();
+    });
+  });
+
+  venueChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      venueChips.forEach((c) => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentVenueCost = parseInt(chip.getAttribute('data-cost') || '0', 10);
+      currentVenueName = chip.textContent.trim();
+      calculate();
+    });
+  });
+
+  serviceCheckboxes.forEach((cb) => {
+    cb.addEventListener('change', calculate);
+  });
+
+  btnShare?.addEventListener('click', () => {
+    const { formatted, selectedServices } = calculate();
+    const serviceListText = selectedServices.length > 0 ? selectedServices.join(', ') : 'None selected';
+    const text = `Hello Happy Events, I used your website price estimator for an event in Surat:%0A%0A` +
+      `🎉 Event Type: ${encodeURIComponent(currentEventName)}%0A` +
+      `📍 Venue: ${encodeURIComponent(currentVenueName)}%0A` +
+      `✨ Selected Services: ${encodeURIComponent(serviceListText)}%0A` +
+      `💰 Estimated Total: ${encodeURIComponent(formatted)}%0A%0A` +
+      `Please let me know your availability and package customizations.`;
+
+    window.open(`https://wa.me/${PHONE_NUMBER}?text=${text}`, '_blank');
+  });
+
+  calculate();
+}
+
+/* ==========================================================================
+   GALLERY LIGHTBOX
+   ========================================================================== */
+function initGalleryLightbox() {
+  const lightbox = document.getElementById('lightboxModal');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCaption = document.getElementById('lightboxCaption');
+  const closeBtn = document.getElementById('lightboxCloseBtn');
+
+  document.querySelectorAll('.gallery-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      const src = item.getAttribute('data-img');
+      const caption = item.getAttribute('data-caption') || '';
+      if (!src) return;
+
+      lightboxImg.src = src;
+      lightboxCaption.textContent = caption;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  closeBtn?.addEventListener('click', closeLightbox);
+  lightbox?.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+}
+
+/* ==========================================================================
+   FAQ ACCORDION
+   ========================================================================== */
+function initFaqAccordion() {
+  const faqItems = document.querySelectorAll('.faq-item');
+
+  faqItems.forEach((item) => {
+    const question = item.querySelector('.faq-question');
+    question?.addEventListener('click', () => {
+      const wasActive = item.classList.contains('active');
+      faqItems.forEach((i) => i.classList.remove('active'));
+      if (!wasActive) {
+        item.classList.add('active');
+      }
+    });
+  });
+}
+
+/* ==========================================================================
+   BOOKING ENQUIRY FORM (WHATSAPP + FIREBASE)
+   ========================================================================== */
+function initBookingForm() {
+  const form = document.getElementById('bookingEnquiryForm');
+  const status = document.getElementById('enquiryStatus');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('custName')?.value.trim();
+    const phone = document.getElementById('custPhone')?.value.trim();
+    const service = document.getElementById('custService')?.value;
+    const date = document.getElementById('custDate')?.value;
+    const location = document.getElementById('custLocation')?.value.trim();
+    const notes = document.getElementById('custNotes')?.value.trim();
+
+    if (!name || !phone || !service || !date) {
+      if (status) {
+        status.style.color = '#ff6b6b';
+        status.textContent = 'Please fill out all required fields.';
+      }
+      return;
+    }
+
+    if (status) {
+      status.style.color = '#ffd20a';
+      status.textContent = 'Opening WhatsApp...';
+    }
+
+    // Attempt to store in Firebase Firestore if configured
+    if (firebaseReady) {
+      try {
+        const app = initializeApp(firebaseConfig, 'enquiry-app-' + Date.now());
+        const db = getFirestore(app);
+        await addDoc(collection(db, 'orders'), {
+          customerName: name,
+          phone: phone,
+          service: service,
+          eventDate: date,
+          location: location || 'Surat',
+          message: notes || '',
+          status: 'new',
+          createdAt: serverTimestamp()
+        });
+      } catch (err) {
+        console.warn('Firebase store skipped:', err);
+      }
+    }
+
+    // Build formatted WhatsApp message
+    const waText = `Hello Happy Events, I would like to book a celebration in Surat:%0A%0A` +
+      `👤 Name: ${encodeURIComponent(name)}%0A` +
+      `📞 Phone: ${encodeURIComponent(phone)}%0A` +
+      `🎉 Service: ${encodeURIComponent(service)}%0A` +
+      `📅 Event Date: ${encodeURIComponent(date)}%0A` +
+      (location ? `📍 Location: ${encodeURIComponent(location)}%0A` : '') +
+      (notes ? `📝 Details: ${encodeURIComponent(notes)}%0A` : '') +
+      `%0APlease share your quotation and photos.`;
+
+    // Open WhatsApp
+    window.open(`https://wa.me/${PHONE_NUMBER}?text=${waText}`, '_blank');
+
+    form.reset();
+    if (status) {
+      status.style.color = '#25d366';
+      status.textContent = 'Thank you! We will connect with you on WhatsApp.';
+    }
+  });
+}
+
+/* ==========================================================================
+   INITIALIZATION TRIGGER
+   ========================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  initParticlesCanvas();
+  initNavigation();
+  initScrollObserver();
+  initServiceFilters();
+  initServiceModal();
+  initCalculator();
+  initGalleryLightbox();
+  initFaqAccordion();
+  initBookingForm();
+});
